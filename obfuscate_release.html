@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//RU" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>OBFUSCATOR</title>
+<style type="text/css">
+#readme {
+	font-family: Book Antique; 
+	font-size:12pt;
+}
+
+#copyright {
+	width:200px;
+	font-family:Book Antique; 
+	font-size:12pt;
+	margin:0px 0px 0px auto;
+}
+
+#log {
+	width:200px;
+	font-family:Book Antique; 
+	font-size:12pt;
+	color:#a9a9A9;
+	margin:0px auto;
+}
+
+#main{
+	width:500px; 
+	margin:5px auto;
+}
+
+body {
+	margin-top:50px;
+	margin-bottom:50px;
+	font-family:Comic Sans MS, comic sans serif; color:#333333; font-size:14px;
+}
+
+button {
+	color:#333333; 
+	font-size:14px;
+	width:100px;
+	height:40px;
+}
+
+table {
+ margin: 2px 2px 2px 2px; 
+ background-color:#F9F6F9; 
+ border:1px solid #D4BC4C; 
+ color:#a9a9A9; 
+ font-family: Book Antique; 
+ font-size:10pt;
+}
+
+tr {
+vertical-align: top;
+}
+</style>
+<script text=javascript>
+var unique = function(arr){
+  var obj = {};
+  for (var i = 0; i < arr.length; i++) {
+    if(arr[i]!='\n') {
+    //if(arr[i].charCodeAt()!=10) {
+	//alert(arr[i].charCodeAt() + " : " + arr[i]);
+		var str = arr[i];
+		obj[str] = true; // запомнить строку в виде свойства объекта
+	}
+  }
+
+  return Object.keys(obj); // или собрать ключи перебором для IE8-
+}
+
+var rnd_char = function(str){
+	var sr = str.replace(/[^a-z]+/g, '');
+	var rnum = Math.floor(Math.random() * sr.length);
+	return sr.substring(rnum,rnum+1);
+}
+
+var rnd_str = function(str,col){
+	var ret = '';
+	for(var i=0;i<col;i++) ret = ret + rnd_char(str);
+	return ret;
+}
+
+var toObfuscate = function(){
+
+	var src = document.getElementById("src").value;
+	//@ Sorted array (.split('').sort()) && 
+	//@ joined array in string (.join(''))  && 
+	//@ replaced special-chars in string (.replace(/[&\/\\><_]/g, '\^$&'))
+	//# pattern replaced one special-char in sttring (.replace(/\>/g, '\^$&'))
+	//# pattern replaced all [&\/\\><_]  special-chars in sttring (.replace(/[&\/\\><_]/g, '\^$&'))
+	//# array special-chars in batch file < , > , >> , /? , * , ? , ; , | , & , && , || , ( ) , { }
+	//var buf = unique(src.split("").sort()).join('').replace(/[\<\>\&\|\(\)\{\}\*\?]/g, '\^$&');
+	var buf = unique(src.split("").sort()).join('');
+	//if char % is searching string then add char %. batch string deleted char '%' where set value string
+	var ex_pos=0;
+	if((ex_pos=buf.indexOf('%'))+1){
+		buf = buf.replace(/[\%]/g, '\%$&');
+	}
+	var pre = [rnd_str(buf,2),rnd_str(buf,2)];
+	//@ Generate obfuscate block-->
+	var dest = "@set " + pre[0] + "=@set\n"; 
+	var dest = dest + "%" + pre[0] + "% " + pre[1] + "=" + buf + "\n";
+	var len = src.length;
+	for(var j = 0; j < len; j++){
+		var pos = 0;
+		if((pos = buf.indexOf(src[j]))+1){
+			//if position search index > position char '%' then corrected position pos=pos-1
+			if(ex_pos>0 && src[j]!='%' && pos>ex_pos){
+				pos--;
+			}
+			dest = dest + "%"+pre[1]+":~"+pos+",1%";
+		} 
+		else dest = dest + src[j];
+	}
+	document.getElementById("dest").value = dest;
+ return 0;
+}
+
+</script>
+</HEAD>
+<BODY>
+<DIV id="readme">
+Вставьте код в 'Source Data' и нажмите 'run'
+</DIV>
+<DIV id="log"></DIV>
+<DIV id="main">
+<table border=0 cellspacing=2 cellpadding=2>
+	<tr>
+	<td colspan="3" style="border:1px solid #D4BC4C; color:#D6A7A0;"><center>------------------------ Obfuscate BATCH file------------------------------</center></td>
+	</tr>
+	<tr>
+	<td>Source DATA</td>
+	<td colspan="2"><TEXTAREA COLS="40" ROWS="10" id="src"></TEXTAREA></td>
+	</tr>
+	<tr>
+	<td colspan="3"><button onclick="toObfuscate();">run</button></td>
+	</tr>
+	<td>Obfuscate DATA</td>
+	<td colspan="2"><TEXTAREA COLS="40" ROWS="10" id="dest"></TEXTAREA></td>
+	</tr>
+</table>
+</DIV>
+<DIV id="copyright">
+Created by U.G. 2017
+</DIV>
+</BODY>
+</HTML>
